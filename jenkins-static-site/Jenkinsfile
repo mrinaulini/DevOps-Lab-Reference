@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+    stages {
+        stage('Generate site') {
+            steps {
+                script {
+                    sh 'rm -rf site || true'
+                    sh 'mkdir -p site/assets'
+                    writeFile file: 'site/index.html', text: """
+                    &lt;!DOCTYPE html&gt;
+                    &lt;html&gt;
+                    &lt;head&gt;
+                        &lt;title&gt;Karunya University&lt;/title&gt;
+                        &lt;link rel="stylesheet" href="assets/style.css"&gt;
+                    &lt;/head&gt;
+                    &lt;body&gt;
+                        &lt;h1&gt;Karunya University&lt;/h1&gt;
+                        &lt;h2&gt;About Karunya University&lt;/h2&gt;
+                        &lt;p&gt;Welcome to Karunya Institute of Technology and Sciences.&lt;/p&gt;
+                    &lt;/body&gt;
+                    &lt;/html&gt;
+                    """
+                    writeFile file: 'site/assets/style.css', text: """
+                    body {
+                        font-family: Arial;
+                        text-align: center;
+                        background: lightblue;
+                        padding: 50px;
+                    }
+                    h1 {
+                        color: darkblue;
+                    }
+                    """
+                }
+            }
+        }
+        stage('Publish site') {
+            steps {
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'site',
+                    reportFiles: 'index.html',
+                    reportName: 'Karunya University - Simple Site'
+                ])
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'site/**', fingerprint: true
+        }
+    }
+}
